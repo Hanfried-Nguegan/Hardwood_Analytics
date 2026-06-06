@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { JWTPayload } from "./../types/auth";
+import { JWTPayload } from "../types/auth";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -18,9 +18,8 @@ export const generateJWT = (
     email,
     username,
     iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days hardcoded
   };
-
   return jwt.sign(payload, JWT_SECRET);
 };
 

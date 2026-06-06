@@ -1,8 +1,7 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-
-dotenv.config();
+import healthRoutes from "./routes/health";
+import authRoutes from "./routes/auth"
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +15,12 @@ app.use(
 
 app.use(express.json());
 
-app.get("/health", (req: Request, res: Response) => {
+// routes
+
+app.use(healthRoutes);
+app.use(authRoutes);
+
+app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
