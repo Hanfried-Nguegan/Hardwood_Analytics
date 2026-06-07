@@ -69,8 +69,10 @@ router.post("/auth/google-callback", async (req: Request, res: Response) => {
       authUser = newUser;
     }
 
+    // generate my own backend jwt
     const token = generateJWT(authUser.id, authUser.email, authUser.username);
-
+    
+    // build final response sent to frontend
     const response: AuthResponse = {
       token,
       user: {
@@ -87,6 +89,7 @@ router.post("/auth/google-callback", async (req: Request, res: Response) => {
   }
 });
 
+// checks if the backend jwt is valid
 router.get("/auth/verify", (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.split(" ")[1];
