@@ -1,3 +1,12 @@
+export type JobStatus = "idle" | "running" | "done" | "failed";
+
+export interface JobState {
+  status: JobStatus;
+  startedAt: number | null;
+  result: IngestResult | null;
+  error: string | null;
+}
+
 export interface NBACommonPlayer {
   PERSON_ID: number;
   DISPLAY_FIRST_LAST: string;

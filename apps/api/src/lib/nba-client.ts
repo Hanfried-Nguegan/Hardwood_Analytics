@@ -1,3 +1,4 @@
+import { Z_FIXED } from "zlib";
 import type { NBACommonPlayer, NBAPlayerCareerStat } from "../types/nba.types";
 
 const NBA_BASE = "https://stats.nba.com/stats";
@@ -16,8 +17,11 @@ const NBA_HEADERS = {
 // Every NBA.com endpoint returns this same shape:
 // { resultSets: [{ headers: string[], rowSet: any[][] }] }
 // This function zips headers + rows into typed objects — write once, use everywhere
-function parseResultSet<T>(data: any, resultSetIndex = 0): T[] {
-  const resultSet = data.resultSets?.[resultSetIndex];
+function parseResultSet<T>(data: unknown, resultSetIndex = 0): T[] {
+  const response = data as {
+    resultSets: Array<{ headers: string[]; rowSet: unknown[][] }>;
+  };
+  const resultSet = response.resultSets?.[resultSetIndex];
 
   if (!resultSet) {
     throw new Error(
@@ -25,21 +29,20 @@ function parseResultSet<T>(data: any, resultSetIndex = 0): T[] {
     );
   }
 
-  const headers: string[] = resultSet.headers;
-  const rows: any[][] = resultSet.rowSet;
+  const { headers, rowSet } = resultSet;
 
-  return rows.map((row) =>
+ return rowSet.map((row) =>
     headers.reduce(
       (obj, header, i) => {
-        obj[header] = row[i];
+        (obj as Record<string, unknown>)[header] = row[i];
         return obj;
       },
-      {} as Record<string, any>,
-    ),
-  ) as T[];
+      {} as T,
+    )
+  );
 }
 
-export async function fetchAllPlayers(season: "2024-25") {
+export async function fetchAllPlayers(season: "2025-26"): Promise<NBACommonPlayer[]> {
   const url = `${NBA_BASE}/commonallplayers?LeagueID=00&Season=${season}&IsOnlyCurrentSeason=0`;
 
   const res = await fetch(url, { headers: NBA_HEADERS });
@@ -51,19 +54,37 @@ export async function fetchAllPlayers(season: "2024-25") {
   }
 
   const data = await res.json();
-  return parseResultSet<NBACommonPlayer>(data);
+  const players = parseResultSet<NBACommonPlayer>(data);
+  console.log("[fetchAllPlayers] count:", players.length);
+  console.log("[fetchAllPlayers] first player:", players[0]);
+
+  return players;
 }
 
-export async function fetchPlayerCareerStats(nbaPlayerId: number) {
+export async function fetchPlayerCareerStats(nbaPlayerId: number): Promise<NBAPlayerCareerStat[]> {
   const url = `${NBA_BASE}/playercareerstats?PerMode=PerGame&PlayerID=${nbaPlayerId}`;
 
   const res = await fetch(url, { headers: NBA_HEADERS });
 
-  if(!res.ok) {
-    throw new Error(`NBA API error fetching player ${nbaPlayerId}: ${res.status} ${res.statusText}`,)
-  };
+  if (!res.ok) {
+    throw new Error(
+      `NBA API error fetching player ${nbaPlayerId}: ${res.status} ${res.statusText}`,
+    );
+  }
 
   const data = await res.json();
+  const stats = parseResultSet<NBAPlayerCareerStat>(data, 0);
+  console.log(
+    "[fetchPlayerCareerStats] playerID:",
+    nbaPlayerId,
+    "seasons:",
+    stats.length,
+  );
+  console.log("[fetchPlayerCareerStats] career stats:", stats);
 
-  return parseResultSet<NBAPlayerCareerStat>(data, 0);
+  return stats;
 }
+
+//cfetchAllPlayers("2025-26").then(console.log).catch(console.error);
+
+//fetchPlayerCareerStats(1628386).then(console.log).catch(console.error);
