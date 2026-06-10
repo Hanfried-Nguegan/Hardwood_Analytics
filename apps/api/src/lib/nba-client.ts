@@ -1,4 +1,3 @@
-import { Z_FIXED } from "zlib";
 import type { NBACommonPlayer, NBAPlayerCareerStat } from "../types/nba.types";
 
 const NBA_BASE = "https://stats.nba.com/stats";
@@ -42,7 +41,7 @@ function parseResultSet<T>(data: unknown, resultSetIndex = 0): T[] {
   );
 }
 
-export async function fetchAllPlayers(season: "2025-26"): Promise<NBACommonPlayer[]> {
+export async function fetchAllPlayers(season: string): Promise<NBACommonPlayer[]> {
   const url = `${NBA_BASE}/commonallplayers?LeagueID=00&Season=${season}&IsOnlyCurrentSeason=0`;
 
   const res = await fetch(url, { headers: NBA_HEADERS });
@@ -54,7 +53,7 @@ export async function fetchAllPlayers(season: "2025-26"): Promise<NBACommonPlaye
   }
 
   const data = await res.json();
-  const players = parseResultSet<NBACommonPlayer>(data);
+  const players = parseResultSet<NBACommonPlayer>(data, 0);
   console.log("[fetchAllPlayers] count:", players.length);
   console.log("[fetchAllPlayers] first player:", players[0]);
 
@@ -85,6 +84,6 @@ export async function fetchPlayerCareerStats(nbaPlayerId: number): Promise<NBAPl
   return stats;
 }
 
-//cfetchAllPlayers("2025-26").then(console.log).catch(console.error);
+//fetchAllPlayers("2025-26").then(console.log).catch(console.error);
 
 //fetchPlayerCareerStats(1628386).then(console.log).catch(console.error);
