@@ -16,6 +16,7 @@ export interface NBACommonPlayer {
   ROSTERSTATUS: number;
   FROM_YEAR: string;
   TO_YEAR: string;
+  GAMES_PLAYED_FLAG: "Y" | "N"; // Add this field to indicate if player has played a game
 }
 
 export interface NBAPlayerCareerStat {

@@ -1,4 +1,4 @@
-import './App.css'
+import { IngestPanel } from './components/IngestPanel'
 
 function App() {
 
@@ -6,6 +6,7 @@ function App() {
     <>
       <section id="center">
         <h1>HARDWOOD ANALYTICS</h1>
+        <IngestPanel/>
       </section>
     </>
   )

@@ -34,7 +34,7 @@ export async function upsertPlayers(
   const rows = players.map((p) => ({
     name: p.name,
     nba_id: p.nba_id,
-    teams_id: teamMap.get(p.team_abbreviation) ?? null,
+    team_id: teamMap.get(p.team_abbreviation) ?? null,
     position: p.position,
     image_url: p.image_url,
   }));
