@@ -1,4 +1,9 @@
-import { fetchAllPlayers, fetchPlayerCareerStats } from "../lib/nba-client.js";
+import {
+  fetchAllPlayers,
+  fetchPlayerCareerStats,
+  fetchPlayerInfo,
+  fetchTeaminfo,
+} from "../lib/nba-client.js";
 import {
   upsertTeams,
   upsertPlayers,
@@ -12,7 +17,10 @@ import type {
   NormalizedStat,
   IngestOptions,
   IngestResult,
+  NBATeamInfo,
 } from "../types/nba.types.js";
+import { getTeamLogoUrl } from "../lib/team-logos.js";
+import { supabase } from "../db/client.js";
 
 const delay = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -25,13 +33,19 @@ function buildImageUrl(nbaId: number): string {
   return `https://cdn.nba.com/headshots/nba/latest/1040x760/${nbaId}.png`;
 }
 
-function normalizeTeam(raw: NBACommonPlayer): NormalizedTeam {
+function normalizeTeam(
+  raw: NBACommonPlayer,
+  teamInfo: NBATeamInfo | undefined,
+): NormalizedTeam {
   return {
-    name: raw.TEAM_CITY
-      ? `${raw.TEAM_CITY} (${raw.TEAM_ABBREVIATION})`
-      : raw.TEAM_ABBREVIATION,
+    name: teamInfo
+      ? `${teamInfo.TEAM_CITY} ${teamInfo.TEAM_NAME}`
+      : raw.TEAM_CITY
+        ? `${raw.TEAM_CITY} (${raw.TEAM_ABBREVIATION})`
+        : raw.TEAM_ABBREVIATION,
     abbreviation: raw.TEAM_ABBREVIATION,
-    conference: null,
+    conference: teamInfo?.TEAM_CONFERENCE ?? null,
+    logo_url: getTeamLogoUrl(raw.TEAM_ABBREVIATION) || null,
   };
 }
 
@@ -41,6 +55,8 @@ function normalizePlayer(raw: NBACommonPlayer): NormalizedPlayer {
     nba_id: raw.PERSON_ID,
     team_abbreviation: raw.TEAM_ABBREVIATION,
     position: null,
+    height: null,
+    weight: null,
     image_url: buildImageUrl(raw.PERSON_ID),
   };
 }
@@ -80,6 +96,8 @@ export async function runPlayerIngestion(
 
   console.log(`[ingest] Step 1/4: Fetching active players from NBA.com...`);
 
+  // fetch all players
+
   const rawPlayers = await fetchAllPlayers(season);
   const activePlayers = rawPlayers.filter(
     (p) =>
@@ -88,13 +106,41 @@ export async function runPlayerIngestion(
   );
   console.log(`[ingest] Found ${activePlayers.length} active players`);
 
-  console.log(`[ingest] Step 2/4: Upserting teams...`);
-  const uniqueTeamsMap = new Map(
-    activePlayers
-      .filter((p) => p.TEAM_ABBREVIATION && p.TEAM_ABBREVIATION !== "") // only players WITH a current team
-      .map((p) => [p.TEAM_ABBREVIATION, normalizeTeam(p)]),
+  console.log(`[ingest] Step 2/4: Fetching team info and upserting teams...`);
+
+  // isoloting players who have a current team
+  const playersWithTeams = activePlayers.filter(
+    (p) => p.TEAM_ABBREVIATION && p.TEAM_ABBREVIATION !== "",
   );
-  const uniqueTeams: NormalizedTeam[] = [...uniqueTeamsMap.values()];
+
+  // deduplicate - omly one entry per team abbreviation
+  const uniqueTeamPlayer = playersWithTeams.filter(
+    (p, i, arr) =>
+      arr.findIndex((x) => x.TEAM_ABBREVIATION === p.TEAM_ABBREVIATION) === i,
+  );
+
+  // fetch team info for each unique team and store in a Map
+  // Map<abbreviation, NBATeamInfo> — e.g. "LAL" → { TEAM_CONFERENCE: "West", ... }
+
+  const teamInfoMap = new Map<string, NBATeamInfo>();
+  for (const player of uniqueTeamPlayer) {
+    const info = await fetchTeaminfo(player.TEAM_ID);
+
+    if (info) {
+      teamInfoMap.set(player.TEAM_ABBREVIATION, info);
+      await delay(300);
+    }
+  }
+
+  const uniqueTeams: NormalizedTeam[] = [
+    ...new Map(
+      playersWithTeams.map((p) => [
+        p.TEAM_ABBREVIATION,
+        normalizeTeam(p, teamInfoMap.get(p.TEAM_ABBREVIATION)),
+      ]),
+    ).values(),
+  ];
+
   const teamMap = await upsertTeams(uniqueTeams);
   console.log(`[ingest] Upserted ${teamMap.size} teams`);
 
@@ -106,7 +152,7 @@ export async function runPlayerIngestion(
   console.log(`[ingest] Upserted ${playerMap.size} players`);
 
   console.log(
-    `[ingest] Step 4/4: Fetching career stats for ALL ${activePlayers.length} players...`,
+    `[ingest] Step 4/4: Fetching career stats + info for ALL ${activePlayers.length} players...`,
   );
   console.log(
     `[ingest] Estimated time: ~${Math.ceil((activePlayers.length * delayMs) / 60000)} minutes`,
@@ -117,13 +163,33 @@ export async function runPlayerIngestion(
     const progress = `(${i + 1}/${activePlayers.length})`;
 
     try {
-      const rawStats = await fetchPlayerCareerStats(player.PERSON_ID);
+      const [rawStats, playerInfo] = await Promise.all([
+        fetchPlayerCareerStats(player.PERSON_ID),
+        fetchPlayerInfo(player.PERSON_ID),
+      ]);
+      //const rawStats = await fetchPlayerCareerStats(player.PERSON_ID);
       const stats = normalizeStats(rawStats, player.PERSON_ID);
       const count = await upsertPlayerStats(stats, playerMap);
       statsUpserted += count;
 
+      if (playerInfo) {
+        const playerId = playerMap.get(player.PERSON_ID);
+        if (playerId) {
+          await supabase
+            .from("players")
+            .update({
+              position: playerInfo.POSITION || null,
+              height: playerInfo.HEIGHT || null,
+              weight: playerInfo.WEIGHT
+                ? parseInt(playerInfo.WEIGHT, 10)
+                : null,
+            })
+            .eq("id", playerId);
+        }
+      }
+
       console.log(
-        `[ingest] ${progress} ✓ ${player.DISPLAY_FIRST_LAST} — ${count} season rows`,
+        `[ingest] ${progress} ✓ ${player.DISPLAY_FIRST_LAST} — ${count} seasons | ${playerInfo?.POSITION ?? "no pos"} | ${playerInfo?.HEIGHT ?? "no height"}`,
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);

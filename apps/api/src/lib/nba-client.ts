@@ -1,4 +1,9 @@
-import type { NBACommonPlayer, NBAPlayerCareerStat } from "../types/nba.types";
+import { NBATeamInfo } from "./../types/nba.types";
+import type {
+  NBACommonPlayer,
+  NBAPlayerCareerStat,
+  NBAPlayerInfo,
+} from "../types/nba.types";
 
 const NBA_BASE = "https://stats.nba.com/stats";
 
@@ -30,18 +35,17 @@ function parseResultSet<T>(data: unknown, resultSetIndex = 0): T[] {
 
   const { headers, rowSet } = resultSet;
 
- return rowSet.map((row) =>
-    headers.reduce(
-      (obj, header, i) => {
-        (obj as Record<string, unknown>)[header] = row[i];
-        return obj;
-      },
-      {} as T,
-    )
+  return rowSet.map((row) =>
+    headers.reduce((obj, header, i) => {
+      (obj as Record<string, unknown>)[header] = row[i];
+      return obj;
+    }, {} as T),
   );
 }
 
-export async function fetchAllPlayers(season: string): Promise<NBACommonPlayer[]> {
+export async function fetchAllPlayers(
+  season: string,
+): Promise<NBACommonPlayer[]> {
   const url = `${NBA_BASE}/commonallplayers?LeagueID=00&Season=${season}&IsOnlyCurrentSeason=0`;
 
   const res = await fetch(url, { headers: NBA_HEADERS });
@@ -60,7 +64,43 @@ export async function fetchAllPlayers(season: string): Promise<NBACommonPlayer[]
   return players;
 }
 
-export async function fetchPlayerCareerStats(nbaPlayerId: number): Promise<NBAPlayerCareerStat[]> {
+export async function fetchPlayerInfo(
+  nbaPlayerId: number,
+): Promise<NBAPlayerInfo | null> {
+  const url = `${NBA_BASE}/commonplayerinfo?PlayerID=${nbaPlayerId}`;
+
+  const res = await fetch(url, { headers: NBA_HEADERS });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const data = await res.json();
+  const playerInfo = parseResultSet<NBAPlayerInfo>(data, 0);
+
+  return playerInfo[0] ?? null;
+}
+
+export async function fetchTeaminfo(
+  nbaTeamId: number,
+): Promise<NBATeamInfo | null> {
+  const url = `${NBA_BASE}/teaminfocommon?TeamID=${nbaTeamId}&Season=2024-25&SeasonType=Regular+Season`;
+
+  const res = await fetch(url, { headers: NBA_HEADERS });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const data = await res.json();
+  const teamInfo = parseResultSet<NBATeamInfo>(data, 0);
+
+  return teamInfo[0] ?? null;
+}
+
+export async function fetchPlayerCareerStats(
+  nbaPlayerId: number,
+): Promise<NBAPlayerCareerStat[]> {
   const url = `${NBA_BASE}/playercareerstats?PerMode=PerGame&PlayerID=${nbaPlayerId}`;
 
   const res = await fetch(url, { headers: NBA_HEADERS });
@@ -86,4 +126,8 @@ export async function fetchPlayerCareerStats(nbaPlayerId: number): Promise<NBAPl
 
 //fetchAllPlayers("2025-26").then(console.log).catch(console.error);
 
-//fetchPlayerCareerStats(1628386).then(console.log).catch(console.error);
+//fetchPlayerCareerStats(1112).then(console.log).catch(console.error);
+
+//fetchPlayerInfo(23).then(console.log).catch(console.error);
+
+//fetchTeaminfo(1610612739).then(console.log).catch(console.error);

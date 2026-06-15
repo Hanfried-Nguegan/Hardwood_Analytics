@@ -82,4 +82,3 @@ router.get("/ingest/status", authMiddleware, (req: Request, res: Response) => {
 });
 
 export default router;
-

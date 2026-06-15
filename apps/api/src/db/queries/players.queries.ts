@@ -36,6 +36,8 @@ export async function upsertPlayers(
     nba_id: p.nba_id,
     team_id: teamMap.get(p.team_abbreviation) ?? null,
     position: p.position,
+    height: p.height,
+    weight: p.weight,
     image_url: p.image_url,
   }));
 

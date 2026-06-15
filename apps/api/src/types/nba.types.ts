@@ -16,7 +16,22 @@ export interface NBACommonPlayer {
   ROSTERSTATUS: number;
   FROM_YEAR: string;
   TO_YEAR: string;
-  GAMES_PLAYED_FLAG: "Y" | "N"; // Add this field to indicate if player has played a game
+  GAMES_PLAYED_FLAG: "Y" | "N"; // this field indicates if player has played a game
+}
+
+export interface NBAPlayerInfo {
+  PERSON_ID: number;
+  POSITION: string;
+  HEIGHT: string;
+  WEIGHT: string;
+}
+
+export interface NBATeamInfo {
+  TEAM_ID: number;
+  TEAM_ABBREVIATION: string;
+  TEAM_CITY: string;
+  TEAM_NAME: string;
+  TEAM_CONFERENCE: string; // "East" or "West"
 }
 
 export interface NBAPlayerCareerStat {
@@ -37,14 +52,17 @@ export interface NBAPlayerCareerStat {
 export interface NormalizedTeam {
   name: string;
   abbreviation: string;
-  conference: null;
+  conference: string | null;
+  logo_url: string | null;
 }
 
 export interface NormalizedPlayer {
   name: string;
   nba_id: number;
   team_abbreviation: string;
-  position: null;
+  position: string | null;
+  height: string | null;
+  weight: string | null;
   image_url: string;
 }
 
