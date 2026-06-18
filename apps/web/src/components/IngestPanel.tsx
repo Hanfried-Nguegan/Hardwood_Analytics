@@ -55,7 +55,7 @@ export function IngestPanel() {
 
       {/* Done state — show results */}
       {isDone && status.result && (
-        <div style={{ background: "#f0fdf4", padding: "16px", borderRadius: "8px" }}>
+        <div style={{ background: "#000000", padding: "16px", borderRadius: "8px" }}>
           <p>✅ Done in {(status.result.durationMs / 1000).toFixed(1)}s</p>
           <p>🏀 {status.result.playersUpserted} players synced</p>
           <p>📊 {status.result.statsUpserted} stat rows upserted</p>

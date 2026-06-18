@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #090909;
+  color: #e5e2e1;
+}
+
+.glass-panel {
+  background: rgba(18, 18, 18, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.neon-text-orange {
+  color: #ff6b00;
+  text-shadow: 0 0 20px rgba(255, 107, 0, 0.5);
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ticker-wrap {
+  width: 100%;
+  overflow: hidden;
+  background-color: #0e0e0e;
+  border-top: 1px solid rgba(255, 107, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 107, 0, 0.2);
+  padding: 8px 0;
+}
+
+.ticker {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 40s linear infinite;
+}
+
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-item {
+  display: inline-block;
+  padding: 0 2rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: #c3c7cd;
+}
+
+.ticker-val {
+  color: #ff6b00;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.ticker-blue {
+  color: #0566d9;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.gradient-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 107, 0, 0.05) 0%,
+    rgba(9, 9, 9, 1) 70%
+  );
+  z-index: -1;
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 12px;
+  background-color: #ff6b00;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink {
+  from,
+  to {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.log-line {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.3s ease;
+}
+
+.log-line.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.win-bar-left {
+  transform-origin: right;
+  transform: scaleX(0);
+  transition: transform 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.win-bar-right {
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.win-bar-left.animate {
+  transform: scaleX(1);
+}
+
+.win-bar-right.animate {
+  transform: scaleX(1);
+}

@@ -53,10 +53,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log("data", data);
 
           localStorage.setItem("jwt", data.token);
-          localStorage.setItem("user", JSON.stringify(data.useer));
+          localStorage.setItem("user", JSON.stringify(data.user));
 
           setToken(data.token);
-          setUser(data);
+          setUser(data.user);
         } catch (err) {
           console.log("[auth] Failed to exchange token:", err);
         }
