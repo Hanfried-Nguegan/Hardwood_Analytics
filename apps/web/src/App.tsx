@@ -3,7 +3,16 @@ import { AuthProvider } from "./context/AuthProvider";
 import { LandingPage } from "./pages/LandingPage";
 import { AuthCallback } from "./pages/AuthCallback";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { Dashboard } from "./pages/Dashboard";
+import DashboardLayout from "./components/dashboard/DashboardLayout";
+import DashboardHome from "./pages/dashboard/DashboardHome";
+import Players from "./pages/dashboard/Players";
+import Teams from "./pages/dashboard/Teams";
+import Simulations from "./pages/dashboard/Simulations";
+import Comparisons from "./pages/dashboard/Comparisons";
+import Games from "./pages/dashboard/Games";
+import Analytics from "./pages/dashboard/Analytics";
+import AIAssistant from "./pages/dashboard/AIAssistant";
+import Settings from "./pages/dashboard/Settings";
 
 function App() {
   return (
@@ -17,10 +26,20 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<DashboardHome />} />
+            <Route path="players" element={<Players />} />
+            <Route path="teams" element={<Teams />} />
+            <Route path="simulations" element={<Simulations />} />
+            <Route path="comparisons" element={<Comparisons />} />
+            <Route path="games" element={<Games />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="ai" element={<AIAssistant />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>
