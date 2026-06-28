@@ -56,6 +56,7 @@ router.post("/auth/google-callback", async (req: Request, res: Response) => {
           email,
           google_id,
           username: user_metadata?.preferred_username || email.split("@")[0],
+          avatar_url: user_metadata?.avatar_url ?? user_metadata?.picture ?? null,
         })
         .select()
         .single();
@@ -79,6 +80,7 @@ router.post("/auth/google-callback", async (req: Request, res: Response) => {
         id: authUser.id,
         email: authUser.email,
         username: authUser.username,
+        avatar_url: authUser.avatar_url ?? null,
       },
     };
     return res.json(response);

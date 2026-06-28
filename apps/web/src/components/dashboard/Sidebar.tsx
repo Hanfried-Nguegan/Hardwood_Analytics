@@ -6,7 +6,7 @@ const Sidebar = () => {
   //const { signOut } = useAuth();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-surface/40 backdrop-blur-xl border-outline-variant/30 hidden md:flex flex-col py-md px-sm z-40">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-surface/40 backdrop-blur-xl border-r border-white/5 hidden md:flex flex-col py-md px-sm z-40">
       <div className="flex items-center gap-sm mb-lg px-sm">
         <img
           src="/logo.png"

@@ -93,3 +93,45 @@ export interface IngestOptions {
   statsLimit?: number;
   delayMs?: number;
 }
+
+export interface PlayerRow {
+  id: string;
+  name: string;
+  nba_id: number;
+  position: string | null;
+  height: string | null;
+  weight: string | null;
+  image_url: string | null;
+  team_id: string | null;
+  nba_teams: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    conference: string | null;
+    logo_url: string | null;
+  } | null;
+  player_stats: {
+    season: number;
+    team_abbreviation: string;
+    ppg: number;
+    rpg: number;
+    apg: number;
+    spg: number;
+    bpg: number;
+    fg_pct: number;
+    three_pct: number;
+    ft_pct: number;
+  }[];
+}
+
+export interface GetPlayersOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+  team?: string;
+  position?: string;
+  conference?: string;
+  sortBy?: "ppg" | "rpg" | "apg" | "name";
+  order?: "asc" | "desc";
+  season?: number;
+}

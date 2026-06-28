@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "../lib/supabase";
-import { AuthContext, type User } from "./AuthContext";
+import { AuthContext } from "./AuthContext";
+import type { User } from "../types/User";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => {
@@ -9,11 +10,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [user, setUser] = useState<User | null>(() => {
     const storedUser = localStorage.getItem("user");
-
-    if (!storedUser) {
-      return null;
-    }
-
+    if (!storedUser) return null;
     try {
       return JSON.parse(storedUser);
     } catch {
@@ -35,58 +32,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             `${import.meta.env.VITE_API_BASE}/auth/google-callback`,
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                access_token: session.access_token,
-              }),
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ access_token: session.access_token }),
             },
           );
 
-          if (!res.ok) {
-            throw new Error("Backend auth failed");
-          }
+          if (!res.ok) throw new Error("Backend auth failed");
 
           const data = await res.json();
 
-          console.log("data", data);
+          const userWithAvatar: User = {
+            ...data.user,
+          };
 
           localStorage.setItem("jwt", data.token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-
+          localStorage.setItem("user", JSON.stringify(userWithAvatar));
           setToken(data.token);
-          setUser(data.user);
+          setUser(userWithAvatar);
         } catch (err) {
-          console.log("[auth] Failed to exchange token:", err);
+          console.error("[auth] Failed to exchange token:", err);
         }
       }
 
       if (event === "SIGNED_OUT") {
         localStorage.removeItem("jwt");
         localStorage.removeItem("user");
-
         setToken(null);
         setUser(null);
       }
     });
+
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = async() => {
+  const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-        }
-    })
-  }
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
 
   const signOut = async () => {
     await supabase.auth.signOut();
-  }
+  };
 
   return (
-    <AuthContext.Provider value={{user,token,isLoading,signInWithGoogle,signOut}}>{children}</AuthContext.Provider>
-  )
+    <AuthContext.Provider
+      value={{ user, token, isLoading, signInWithGoogle, signOut }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
