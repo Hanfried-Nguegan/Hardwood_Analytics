@@ -33,7 +33,7 @@ router.get(
       conference: conference as string | undefined,
       sortBy: (sortBy as "ppg" | "rpg" | "apg" | "name") ?? "ppg",
       order: (order as "asc" | "desc") ?? "desc",
-      season: season ? Number(season) : 2024,
+      season: season ? Number(season) : 2025,
     });
 
     res.status(200).json({

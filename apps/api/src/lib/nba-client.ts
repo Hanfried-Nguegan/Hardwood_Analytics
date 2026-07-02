@@ -84,7 +84,7 @@ export async function fetchPlayerInfo(
 export async function fetchTeaminfo(
   nbaTeamId: number,
 ): Promise<NBATeamInfo | null> {
-  const url = `${NBA_BASE}/teaminfocommon?TeamID=${nbaTeamId}&Season=2024-25&SeasonType=Regular+Season`;
+  const url = `${NBA_BASE}/teaminfocommon?TeamID=${nbaTeamId}&Season=2025-26&SeasonType=Regular+Season`;
 
   const res = await fetch(url, { headers: NBA_HEADERS });
 

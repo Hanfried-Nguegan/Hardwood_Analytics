@@ -8,37 +8,21 @@ async function fetchPlayers(
 ): Promise<PlayerResponse> {
   const params = new URLSearchParams();
 
-  if (filters.page) {
-    params.set("page", String(filters.page));
-  }
+  if (filters.page) params.set("page", String(filters.page));
 
-  if (filters.limit) {
-    params.set("limit", String(filters.limit));
-  }
+  if (filters.limit) params.set("limit", String(filters.limit));
 
-  if (filters.search) {
-    params.set("search", String(filters.search));
-  }
+  if (filters.search) params.set("search", String(filters.search));
 
-  if (filters.team) {
-    params.set("team", String(filters.team));
-  }
+  if (filters.team) params.set("team", String(filters.team));
 
-  if (filters.position) {
-    params.set("position", String(filters.position));
-  }
+  if (filters.position) params.set("position", String(filters.position));
 
-  if (filters.conference) {
-    params.set("conference", String(filters.conference));
-  }
+  if (filters.conference) params.set("conference", String(filters.conference));
 
-  if (filters.sortBy) {
-    params.set("sortBy", String(filters.sortBy));
-  }
+  if (filters.sortBy) params.set("sortBy", String(filters.sortBy));
 
-  if (filters.season) {
-    params.set("season", String(filters.season));
-  }
+  if (filters.season) params.set("season", String(filters.season));
 
   const res = await fetch(`${API_BASE}/players?${params.toString()}`);
 
@@ -60,12 +44,14 @@ export function usePlayers(
   });
 }
 
-export function getLatestStat (player: Player, season = 2024) {
-    const seasonStats = player.player_stats.filter((s) => s.season === season).sort((a,b) => b.ppg - a.ppg);
+export function getLatestStat(player: Player, season = 2025) {
+  const seasonStats = player.player_stats
+    .filter((s) => s.season === season)
+    .sort((a, b) => b.ppg - a.ppg);
 
-    if(seasonStats.length>0) {
-        return seasonStats[0];
-    }
+  if (seasonStats.length > 0) {
+    return seasonStats[0];
+  }
 
-    return player.player_stats.sort((a, b) => b.season - a.season)[0] ?? null;
+  return player.player_stats.sort((a, b) => b.season - a.season)[0] ?? null;
 }

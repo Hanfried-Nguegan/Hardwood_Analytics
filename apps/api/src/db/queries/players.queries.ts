@@ -114,7 +114,7 @@ export async function getPlayers(
     conference,
     sortBy = "ppg",
     order = "desc",
-    season = 2024,
+    season = 2025,
   } = options;
 
   const from = (page - 1) * limit;
